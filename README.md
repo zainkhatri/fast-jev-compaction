@@ -96,6 +96,26 @@ The building blocks (`collectToolCalls`, `fitState`, `batchCalls`,
 `apiKey` defaults to `process.env.TYPESAFE_API_KEY`. Never commit the key or
 put it in a source file.
 
+### Real Jev through OpenRouter
+
+Jev is also served — as the unlisted decisions model `typesafe/jev-1.13` — on
+OpenRouter's decisions endpoint (`https://openrouter.ai/api/alpha/decisions`),
+which speaks the same `{model, state, questions}` → `{answers}` protocol. So the
+same library reaches real Jev with an OpenRouter key (`sk-or-...`), no TypeSafe
+key or waitlist:
+
+```ts
+import { compactMessagesViaOpenRouter } from 'fast-jev-compaction';
+
+// OPENROUTER_API_KEY in the environment, or pass { apiKey }.
+const result = await compactMessagesViaOpenRouter(transcript, { preserveRecentMessages: 4 });
+```
+
+`jevViaOpenRouter({ apiKey?, model?, fetch? })` returns the underlying
+`JevClient` if you want to call `compact` directly. Billing is OpenRouter's
+(prompt only; completion is free). Because the full state is resent per request,
+keep some balance on the account for long sessions.
+
 ## Options
 
 | Option | Default | Description |
@@ -142,6 +162,14 @@ opt-in flag must be set wherever Claude Code runs, e.g. in `~/.claude/settings.j
 { "env": { "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1", "TYPESAFE_API_KEY": "<your key>" } }
 ```
 
+To use real Jev through OpenRouter instead of a TypeSafe key, set
+`OPENROUTER_API_KEY` (an `sk-or-...` key) in place of `TYPESAFE_API_KEY`; the hook
+detects it and routes to OpenRouter's decisions endpoint automatically:
+
+```json
+{ "env": { "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1", "OPENROUTER_API_KEY": "<your sk-or- key>" } }
+```
+
 Then add this repository as a plugin marketplace and install the plugin,
 either from the shell or as slash commands inside a session:
 
@@ -151,7 +179,8 @@ claude plugin install fast-jev-compaction@fast-jev-compaction
 ```
 
 The install prompts for the plugin options (API key, thresholds, `truncateHeadChars`,
-…); leave them at their defaults to use `TYPESAFE_API_KEY` from the environment.
+…); leave them at their defaults to use `TYPESAFE_API_KEY` or `OPENROUTER_API_KEY`
+from the environment.
 Restart Claude Code or run `/reload-plugins`. From then on `/compact` (and
 auto-compaction) goes through Jev: the toast reads
 `fast-jev-compaction: kept N/M messages, no summary (…)` when the pruned history
