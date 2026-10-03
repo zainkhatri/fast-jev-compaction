@@ -55,6 +55,7 @@ The plugin declares these `userConfig` values in
 | `maxStateTokens` | `25000` |
 | `maxRequestTokens` | `30000` |
 | `truncateHeadChars` | `300` |
+| `maxBatches` | `3` |
 | `model` | `jev-latest` |
 | `depthClassification` | `true` |
 | `depthThreshold` | `0.5` |
@@ -67,8 +68,9 @@ Every option except `apiKey`, `compactAtPercent`, `minReductionRatio`, `model`,
 `depthClassification` and `depthThreshold` is passed straight to the library;
 see the root README for what they do. The `session.compact` hook runs the Jev
 requests concurrently. If Jev fails, the response is malformed, the key is
-unavailable, the history cannot be fitted into the state budget, or the
-estimated reduction is below `minReductionRatio`, the hook logs a fallback and
+unavailable, the history cannot be fitted into the state budget, the session
+would need more than `maxBatches` full-state requests, or the estimated
+reduction is below `minReductionRatio`, the hook logs a fallback and
 delegates to Claude Code's built-in compaction. The outcome is shown as a
 toast and logged with the reduction, per-reason counts, state size and
 request count; a per-call `decisions:` line with both probabilities is

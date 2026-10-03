@@ -52,6 +52,12 @@
       "description": "Characters of a tool result kept when Jev decides its full output is no longer needed; 0 keeps only the note.",
       "default": 300
     },
+    "maxBatches": {
+      "type": "number",
+      "title": "Maximum Jev requests per compaction",
+      "description": "Every batch resends the full conversation state (Jev's endpoint is stateless), so batch count multiplies request cost. A compaction needing more than this many batches aborts before any request is sent and falls back to the built-in summary instead.",
+      "default": 3
+    },
     "model": {
       "type": "string",
       "title": "Jev model",

@@ -43,7 +43,10 @@ built-in compaction summary with the original messages.
 5. Questions are split into as many requests as needed so state plus questions
    stays under `maxRequestTokens` (30k by default, under Jev's 32k request
    limit). The same full state is resent with every request; requests run
-   concurrently and their answers are merged.
+   concurrently and their answers are merged. Because the state is resent in
+   full each time, batch count multiplies request cost directly; if a session
+   needs more than `maxBatches` (3 by default) requests, compaction throws
+   before sending any of them instead of firing them all.
 6. Decisions per call, against `keepThreshold`:
    - `keepResult ≥ threshold` → keep call and result;
    - else `keepCall ≥ threshold` → keep the call, truncate the result to its
@@ -130,6 +133,7 @@ keep some balance on the account for long sessions.
 | `maxStateTokens` | `25000` | Estimated token ceiling for the state |
 | `maxRequestTokens` | `30000` | Estimated ceiling for state plus one batch of questions |
 | `truncateHeadChars` | `300` | Characters of a dropped tool result retained before its note |
+| `maxBatches` | `3` | Abort (no requests sent) instead of resending the full state this many times over |
 
 `result.stats` reports message and character counts before and after, the
 per-reason decision counts, the state size in estimated tokens, which fitting
